@@ -1,4 +1,4 @@
-# \<casper-tags-input\>
+# \<casper-multi-input\>
 
 
 
