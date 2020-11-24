@@ -1,6 +1,6 @@
 {
-  "name": "casper-tags-input",
-  "main": "casper-tags-input.js",
+  "name": "@cloudware-casper/casper-multi-input",
+  "main": "casper-multi-input.js",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
     "@polymer/paper-input": "^3.0.0"
