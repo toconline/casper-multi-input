@@ -5,7 +5,9 @@ import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 class CasperMultiInput extends PolymerElement {
 
   static get SPACE_KEY_CODE () { return 32; }
+  static get SPACE_CHAR_CODE () { return 32; }
   static get COMMA_KEY_CODE () { return 188; }
+  static get COMMA_CHAR_CODE () { return 44; }
   static get BACKSPACE_KEY_CODE () { return 8; }
 
   static get properties () {
@@ -104,7 +106,10 @@ class CasperMultiInput extends PolymerElement {
   }
 
   __onKeyUp (event) {
-    if (this.__isCharCodeSpaceOrComma(event.keyCode)) {
+    if ([
+      CasperMultiInput.COMMA_KEY_CODE,
+      CasperMultiInput.SPACE_KEY_CODE
+    ].includes(event.keyCode)) {
       this.__spaceOrCommaKeyUp();
     }
   }
@@ -124,10 +129,13 @@ class CasperMultiInput extends PolymerElement {
 
   __spaceOrCommaKeyUp () {
     // Check if the last character of the input value is either a comma or a space.
-    if (!this.__isCharCodeSpaceOrComma(this.__inputValue.charCodeAt(this.__inputValue.length - 1))) return;
-
-    this.__pushValue(this.__inputValue.substring(0, this.__inputValue.length - 1));
-    this.__inputValue = '';
+    if ([
+      CasperMultiInput.COMMA_CHAR_CODE,
+      CasperMultiInput.SPACE_CHAR_CODE
+    ].includes(this.__inputValue.charCodeAt(this.__inputValue.length - 1))) {
+      this.__pushValue(this.__inputValue.substring(0, this.__inputValue.length - 1));
+      this.__inputValue = '';
+    }
   }
 
   __pushValue (value) {
@@ -141,13 +149,6 @@ class CasperMultiInput extends PolymerElement {
     const regularExpression = this.__regularExpressionsPerType[this.type];
 
     return !regularExpression ? true : regularExpression.test(value);
-  }
-
-  __isCharCodeSpaceOrComma (charCode) {
-    return [
-      CasperMultiInput.COMMA_KEY_CODE,
-      CasperMultiInput.SPACE_KEY_CODE
-    ].includes(charCode);
   }
 }
 
