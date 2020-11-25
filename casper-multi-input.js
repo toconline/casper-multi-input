@@ -10,9 +10,20 @@ class CasperMultiInput extends PolymerElement {
 
   static get properties () {
     return {
+      type: String,
       values: {
         type: Array,
         value: () => ([])
+      },
+      __internalValues: {
+        type: Array,
+        value: () => ([])
+      },
+      __regularExpressionsPerType: {
+        type: Object,
+        value: () => ({
+          email: /^\S+@\S+$/
+        })
       }
     };
   }
@@ -37,22 +48,29 @@ class CasperMultiInput extends PolymerElement {
       </style>
 
       <paper-input
+        id="input"
         value="{{__inputValue}}"
         on-keyup="__onKeyUp"
         on-keydown="__onKeyDown">
         <div id="values-container" slot="prefix">
-          <template is="dom-repeat" items="[[values]]">
+          <template is="dom-repeat" items="[[__internalValues]]">
             <casper-icon-button
               reverse
               with-text
-              text="[[item]]"
               icon="fa-light:times"
+              text="[[item.value]]"
+              invalid$="[[item.invalid]]"
               on-click="__removeOrEditValue">
             </casper-icon-button>
           </template>
         </div>
       </paper-input>
     `;
+  }
+
+  ready () {
+    super.ready();
+    window.test = this;
   }
 
   __removeOrEditValue (event) {
@@ -65,21 +83,14 @@ class CasperMultiInput extends PolymerElement {
   }
 
   __removeValue (valueIndex) {
-    this.values = this.values.filter((_, index) => index !== valueIndex);
+    this.__internalValues = this.__internalValues.filter((_, index) => index !== valueIndex);
   }
 
   __updateValue (valueIndex) {
-    if (this.__isUpdatingValue && this.__inputValue) {
-      this.values = [...this.values, this.__inputValue];
-    }
+    if (this.__inputValue) this.__pushValue(this.__inputValue);
 
-    this.values = this.values.filter((_, index) => {
-      if (index === valueIndex) this.__inputValue = this.values[index];
-
-      this.__isUpdatingValue = true;
-
-      return index !== valueIndex;
-    });
+    this.__inputValue = this.__internalValues[valueIndex].value;
+    this.__removeValue(valueIndex);
   }
 
   __onKeyDown (event) {
@@ -93,7 +104,7 @@ class CasperMultiInput extends PolymerElement {
   }
 
   __onKeyUp (event) {
-    if ([CasperMultiInput.COMMA_KEY_CODE, CasperMultiInput.SPACE_KEY_CODE].includes(event.keyCode)) {
+    if (this.__isCharCodeSpaceOrComma(event.keyCode)) {
       this.__spaceOrCommaKeyUp();
     }
   }
@@ -102,8 +113,8 @@ class CasperMultiInput extends PolymerElement {
     // If the input contains any value, ignore the backspace.
     if (this.__inputValue) return;
 
-    this.values.pop();
-    this.values = [...this.values];
+    this.__internalValues.pop();
+    this.__internalValues = [...this.__internalValues];
   }
 
   __spaceOrCommaKeyDown (event) {
@@ -112,12 +123,31 @@ class CasperMultiInput extends PolymerElement {
   }
 
   __spaceOrCommaKeyUp () {
-    const trimmedValue = this.__inputValue.substring(0, this.__inputValue.length - 1);
-    if (!trimmedValue) return;
+    // Check if the last character of the input value is either a comma or a space.
+    if (!this.__isCharCodeSpaceOrComma(this.__inputValue.charCodeAt(this.__inputValue.length - 1))) return;
 
-    this.values = [...this.values, trimmedValue];
+    this.__pushValue(this.__inputValue.substring(0, this.__inputValue.length - 1));
     this.__inputValue = '';
-    this.__isUpdatingValue = false;
+  }
+
+  __pushValue (value) {
+    this.__internalValues = [
+      ...this.__internalValues,
+      { value, invalid: !this.__validateValue(value) }
+    ];
+  }
+
+  __validateValue (value) {
+    const regularExpression = this.__regularExpressionsPerType[this.type];
+
+    return !regularExpression ? true : regularExpression.test(value);
+  }
+
+  __isCharCodeSpaceOrComma (charCode) {
+    return [
+      CasperMultiInput.COMMA_KEY_CODE,
+      CasperMultiInput.SPACE_KEY_CODE
+    ].includes(charCode);
   }
 }
 
