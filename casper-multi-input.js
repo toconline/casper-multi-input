@@ -89,7 +89,7 @@ class CasperMultiInput extends PolymerElement {
               icon="fa-light:times"
               text="[[item.value]]"
               invalid$="[[item.invalid]]"
-              on-click="__removeOrEditValue">
+              on-click="__removeOrUpdateValue">
             </casper-icon-button>
           </template>
         </div>
@@ -97,7 +97,13 @@ class CasperMultiInput extends PolymerElement {
     `;
   }
 
-  __removeOrEditValue (event) {
+  /**
+   * This method is invoked when the user clicks on one of the existing tags and evalutes
+   * if the user is trying to edit or remove an existing value given the event's target.
+   *
+   * @param {Object} event The event's object.
+   */
+  __removeOrUpdateValue (event) {
     const eventComposedPath = event.composedPath();
     const valueIndex = [...event.target.parentNode.children].indexOf(event.target);
 
@@ -106,10 +112,20 @@ class CasperMultiInput extends PolymerElement {
       : this.__updateValue(valueIndex);
   }
 
+  /**
+   * This method will remove the existing value in the given index.
+   *
+   * @param {Number} valueIndex The value's index.
+   */
   __removeValue (valueIndex) {
     this.__internalValues = this.__internalValues.filter((_, index) => index !== valueIndex);
   }
 
+  /**
+   * This method will update the existing value in the given index, saving the current input content into a new value.
+   *
+   * @param {Number} valueIndex The value's index.
+   */
   __updateValue (valueIndex) {
     if (this.__inputValue) this.__pushValue(this.__inputValue);
 
@@ -117,12 +133,20 @@ class CasperMultiInput extends PolymerElement {
     this.__removeValue(valueIndex);
   }
 
+  /**
+   * This method handles the input's keydown events.
+   *
+   * @param {Object} event The event's object.
+   */
   __onKeyDown (event) {
     event.keyCode === CasperMultiInput.BACKSPACE_KEY_CODE
       ? this.__backspaceKeyDown()
       : this.__remainingKeysDown(event);
   }
 
+  /**
+   * This method specifically handles the input's backspace keydown events.
+   */
   __backspaceKeyDown () {
     // If the input contains any value, ignore the backspace.
     if (this.__inputValue) return;
@@ -131,6 +155,11 @@ class CasperMultiInput extends PolymerElement {
     this.__internalValues = [...this.__internalValues];
   }
 
+  /**
+   * This method handles the remaining input's keydown events.
+   *
+   * @param {Object} event The event's object.
+   */
   __remainingKeysDown (event) {
     // Completely ignore this method if we're not dealing with one of the separator characters.
     if (!Array.from(this.__separatorCharacters).includes(event.key)) return;
@@ -142,8 +171,13 @@ class CasperMultiInput extends PolymerElement {
     setTimeout(() => this.__inputValue = '', 0);
   }
 
+  /**
+   * This method returns an object containing the new value and a flag stating its validity.
+   *
+   * @param {String} value The value that shall be created.
+   */
   __createValue (value) {
-    const regularExpression = this.__regularExpressionsPerType[this.type] || false;
+    const regularExpression = this.__regularExpressionsPerType[this.type];
 
     return {
       value,
@@ -151,15 +185,13 @@ class CasperMultiInput extends PolymerElement {
     };
   }
 
+  /**
+   * This method adds a new value to the list of existing ones.
+   *
+   * @param {String} value The new value we're adding.
+   */
   __pushValue (value) {
     this.__internalValues = [...this.__internalValues, this.__createValue(value)];
-  }
-
-
-  __validateValue (value) {
-    const regularExpression = this.__regularExpressionsPerType[this.type];
-
-    return !regularExpression ? true : regularExpression.test(value);
   }
 
   /**
