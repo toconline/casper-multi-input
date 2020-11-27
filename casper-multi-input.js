@@ -71,9 +71,7 @@ class CasperMultiInput extends PolymerElement {
           margin-bottom: 4px;
         }
 
-        #values-container casper-icon-button {
-          height: 25px;
-          padding: 4px 8px;
+        #values-container casper-multi-input-tag {
           margin-right: 8px;
         }
       </style>
@@ -84,8 +82,7 @@ class CasperMultiInput extends PolymerElement {
         on-keydown="__onKeyDown">
         <div id="values-container" slot="prefix">
           <template is="dom-repeat" items="[[__internalValues]]">
-            <casper-multi-input-tag
-              on-click="__removeOrUpdateValue">
+            <casper-multi-input-tag invalid$="[[item.invalid]]" on-click="__removeOrUpdateValue">
               [[item.value]]
             </casper-multi-input-tag>
           </template>
