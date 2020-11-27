@@ -20,16 +20,23 @@ class CasperMultiInputTag extends PolymerElement {
           display: flex;
           justify-content: center;
           align-items: center;
-          border: #757575 1px solid;
+          border: #BDBDBD 1px solid;
           border-radius: 1rem;
         }
 
         :host([invalid]) {
-          border-color: #FF7043;
+          background-color: var(--status-red);
+          border-color: var(--status-red);
+        }
+
+        :host([invalid]) span,
+        :host([invalid]) casper-icon {
+          color: white;
         }
 
         span {
-          font-size: 0.9rem;
+          font-size: 0.8rem;
+          font-weight: 600;
           color: #616161;
         }
 
@@ -44,7 +51,7 @@ class CasperMultiInputTag extends PolymerElement {
 
         casper-icon:hover {
           transition: color 100ms ease-in;
-          color: black;
+          color: black !important;
           cursor: pointer;
         }
 
