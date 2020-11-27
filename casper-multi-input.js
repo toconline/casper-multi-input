@@ -1,3 +1,4 @@
+import './casper-multi-input-tag.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
 import '@polymer/paper-input/paper-input.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
@@ -83,14 +84,10 @@ class CasperMultiInput extends PolymerElement {
         on-keydown="__onKeyDown">
         <div id="values-container" slot="prefix">
           <template is="dom-repeat" items="[[__internalValues]]">
-            <casper-icon-button
-              reverse
-              with-text
-              icon="fa-light:times"
-              text="[[item.value]]"
-              invalid$="[[item.invalid]]"
+            <casper-multi-input-tag
               on-click="__removeOrUpdateValue">
-            </casper-icon-button>
+              [[item.value]]
+            </casper-multi-input-tag>
           </template>
         </div>
       </paper-input>
