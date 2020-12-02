@@ -72,6 +72,7 @@ class CasperMultiInput extends PolymerElement {
         }
 
         #values-container casper-multi-input-tag {
+          height: 18px;
           margin-right: 8px;
         }
       </style>
