@@ -1,6 +1,5 @@
 import './casper-multi-input-tag.js';
 import '@cloudware-casper/casper-icons/casper-icon-button.js';
-import '@polymer/paper-input/paper-input.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class CasperMultiInput extends PolymerElement {
@@ -9,6 +8,21 @@ class CasperMultiInput extends PolymerElement {
 
   static get properties () {
     return {
+      /**
+       * This flag states if the input is currently focused which will trigger an animation if it is.
+       *
+       * @type {Boolean}
+       */
+      focused: {
+        type: Boolean,
+        reflectToAttribute: true
+      },
+      /**
+       * The input's placeholder.
+       *
+       * @type {String}
+       */
+      placeholder: String,
       /**
        * This property defines the type of the casper-multi-input which should have a specific regular expression
        * to check each value.
@@ -62,34 +76,96 @@ class CasperMultiInput extends PolymerElement {
   static get template () {
     return html`
       <style>
-        paper-input {
-          width: 100%;
+        :host {
+          --paper-container-default-height: 46px;
+          --paper-container-unfocused-border-color: #737373;
         }
 
-        #values-container {
+        #outer-container {
+          width: 100%;
+          padding: 8px 0;
+          min-height: var(--paper-container-default-height);
+        }
+
+        #outer-container #container {
           display: flex;
+          flex-wrap: wrap;
+          align-items: flex-end;
+          /* Remove two pixels because of the underline */
+          min-height: calc(var(--paper-container-default-height) - 2px);
+        }
+
+        #outer-container #container casper-multi-input-tag {
+          height: 20px;
+          margin-right: 4px;
           margin-bottom: 4px;
         }
 
-        #values-container casper-multi-input-tag {
-          height: 18px;
-          margin-right: 8px;
+        #outer-container #container input {
+          padding: 0;
+          height: 24px;
+          flex-grow: 1;
+          border: none;
+          outline: none;
+        }
+
+        #outer-container .underline {
+          height: 2px;
+          width: 100%;
+          position: relative;
+        }
+
+        #outer-container .underline .focused-line,
+        #outer-container .underline .unfocused-line {
+          bottom: 0;
+          width: 100%;
+          position: absolute;
+        }
+
+        #outer-container .underline .unfocused-line {
+          height: 1px;
+          background-color: var(--paper-container-unfocused-border-color);
+        }
+
+        #outer-container .underline .focused-line {
+          height: 2px;
+          background-color: var(--primary-color);
+          transform: scale3d(0, 1, 1);
+          transform-origin: center center;
+          transition: transform 250ms;
+        }
+
+        :host([focused]) #outer-container .focused-line {
+          transform: none;
         }
       </style>
 
-      <paper-input
-        id="input"
-        value="{{__inputValue}}"
-        on-keydown="__onKeyDown">
-        <div id="values-container" slot="prefix">
+      <div id="outer-container">
+        <div id="container">
           <template is="dom-repeat" items="[[__internalValues]]">
             <casper-multi-input-tag invalid$="[[item.invalid]]" on-click="__removeOrUpdateValue">
               [[item.value]]
             </casper-multi-input-tag>
           </template>
+
+          <input id="input" placeholder="[[placeholder]]" />
         </div>
-      </paper-input>
+
+        <!--This is supposed to mimic the paper-input's behavior-->
+        <div class="underline">
+          <div class="unfocused-line"></div>
+          <div class="focused-line"></div>
+        </div>
+      </div>
     `;
+  }
+
+  ready () {
+    super.ready();
+
+    this.$.input.addEventListener('blur', () => { this.focused = false; });
+    this.$.input.addEventListener('focus', () => { this.focused = true; });
+    this.$.input.addEventListener('keydown', event => this.__onKeyDown(event));
   }
 
   /**
@@ -122,9 +198,9 @@ class CasperMultiInput extends PolymerElement {
    * @param {Number} valueIndex The value's index.
    */
   __updateValue (valueIndex) {
-    if (this.__inputValue) this.__pushValue(this.__inputValue);
+    if (this.$.input.value) this.__pushValue(this.$.input.value);
 
-    this.__inputValue = this.__internalValues[valueIndex].value;
+    this.$.input.value = this.__internalValues[valueIndex].value;
     this.__removeValue(valueIndex);
   }
 
@@ -144,7 +220,7 @@ class CasperMultiInput extends PolymerElement {
    */
   __backspaceKeyDown () {
     // If the input contains any value, ignore the backspace.
-    if (this.__inputValue) return;
+    if (this.$.input.value) return;
 
     this.__internalValues.pop();
     this.__internalValues = [...this.__internalValues];
@@ -160,10 +236,10 @@ class CasperMultiInput extends PolymerElement {
     if (!Array.from(this.__separatorCharacters).includes(event.key)) return;
 
     // Prevent the space and the comma if the input doesn't have any value.
-    if (!this.__inputValue) return event.preventDefault();
+    if (!this.$.input.value) return event.preventDefault();
 
-    this.__pushValue(this.__inputValue);
-    setTimeout(() => this.__inputValue = '', 0);
+    this.__pushValue(this.$.input.value);
+    setTimeout(() => this.$.input.value = '', 0);
   }
 
   /**
