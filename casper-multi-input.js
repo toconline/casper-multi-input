@@ -5,6 +5,7 @@ import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 class CasperMultiInput extends PolymerElement {
 
   static get BACKSPACE_KEY_CODE () { return 8; }
+  static get TAB_KEY_CODE () { return 9; }
 
   static get properties () {
     return {
@@ -210,9 +211,22 @@ class CasperMultiInput extends PolymerElement {
    * @param {Object} event The event's object.
    */
   __onKeyDown (event) {
-    event.keyCode === CasperMultiInput.BACKSPACE_KEY_CODE
-      ? this.__backspaceKeyDown()
-      : this.__remainingKeysDown(event);
+    switch (event.keyCode)  {
+      case CasperMultiInput.BACKSPACE_KEY_CODE:
+        this.__backspaceKeyDown();
+        break;
+    
+      case CasperMultiInput.TAB_KEY_CODE:
+        event.preventDefault();
+        if (!this.$.input.value) return;
+
+        this.__pushValue(this.$.input.value);
+        setTimeout(() => this.$.input.value = '', 0);
+        break;
+
+      default:
+        this.__remainingKeysDown(event);
+    }
   }
 
   /**
