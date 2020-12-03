@@ -1,7 +1,7 @@
 {
   "name": "@cloudware-casper/casper-multi-input",
   "main": "casper-multi-input.js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "dependencies": {
     "@polymer/polymer": "^3.0.0",
     "@polymer/paper-input": "^3.0.0"
