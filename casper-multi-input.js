@@ -70,7 +70,7 @@ class CasperMultiInput extends PolymerElement {
        */
       __separatorCharacters: {
         type: String,
-        value: [',', ' ', 'Tab']
+        value: ', '
       }
     };
   }
@@ -171,7 +171,11 @@ class CasperMultiInput extends PolymerElement {
   ready () {
     super.ready();
 
-    this.$.input.addEventListener('blur', () => { this.focused = false; });
+    this.$.input.addEventListener('blur', () => { 
+      this.focused = false;
+      this.__pushValueAndReset()
+     });
+
     this.$.input.addEventListener('focus', () => { this.focused = true; });
     this.$.input.addEventListener('keydown', event => this.__onKeyDown(event));
   }
@@ -241,7 +245,7 @@ class CasperMultiInput extends PolymerElement {
    */
   __remainingKeysDown (event) {
     // Completely ignore this method if we're not dealing with one of the separator characters.
-    if (!this.__separatorCharacters.includes(event.key)) return;
+    if (!Array.from(this.__separatorCharacters).includes(event.key)) return;
 
     // Prevent the space and the comma if the input doesn't have any value.
     if (!this.$.input.value) {
@@ -251,8 +255,7 @@ class CasperMultiInput extends PolymerElement {
       return event.preventDefault();
     }
 
-    this.__pushValue(this.$.input.value);
-    setTimeout(() => this.$.input.value = '', 0);
+    this.__pushValueAndReset();
   }
 
   /**
@@ -302,6 +305,16 @@ class CasperMultiInput extends PolymerElement {
       .filter(internalValue => !internalValue.invalid)
       .map(internalValue => internalValue.value);
     this.__valuesLock = false;
+  }
+
+  /**
+   * Adds a new value to the list of existing ones, and visually resets current input value.
+   */
+  __pushValueAndReset () {
+    if (!this.$.input.value) return;
+
+    this.__pushValue(this.$.input.value);
+    setTimeout(() => this.$.input.value = '', 0);
   }
 }
 
