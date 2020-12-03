@@ -78,6 +78,8 @@ class CasperMultiInput extends PolymerElement {
     return html`
       <style>
         :host {
+          --paper-container-input-color: #444444;
+          --paper-container-input-font-size: 1rem;
           --paper-container-default-height: 46px;
           --paper-container-unfocused-border-color: #737373;
         }
@@ -108,6 +110,10 @@ class CasperMultiInput extends PolymerElement {
           flex-grow: 1;
           border: none;
           outline: none;
+          font-family: inherit;
+          color: var(--paper-container-input-color);
+          font-size: var(--paper-container-input-font-size);
+          -webkit-font-smoothing: antialiased;
         }
 
         #outer-container .underline {
@@ -284,10 +290,10 @@ class CasperMultiInput extends PolymerElement {
    */
   __valuesChanged () {
     // This is used to avoid observer loops since the values and __internalValues properties alter each other.
-    if (this.__valuesLock) return;
+    if (this.__valuesLock || !this.values) return;
 
     this.__internalValuesLock = true;
-    this.__internalValues = this.values.map(value => this.__createValue(value));
+    this.__internalValues = [this.values].flat().map(value => this.__createValue(value));
     this.__internalValuesLock = false;
   }
 
