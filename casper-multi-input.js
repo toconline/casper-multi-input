@@ -69,7 +69,7 @@ class CasperMultiInput extends PolymerElement {
        */
       __separatorCharacters: {
         type: String,
-        value: ', '
+        value: [',', ' ', 'Tab']
       }
     };
   }
@@ -217,22 +217,9 @@ class CasperMultiInput extends PolymerElement {
    * @param {Object} event The event's object.
    */
   __onKeyDown (event) {
-    switch (event.keyCode)  {
-      case CasperMultiInput.BACKSPACE_KEY_CODE:
-        this.__backspaceKeyDown();
-        break;
-    
-      case CasperMultiInput.TAB_KEY_CODE:
-        event.preventDefault();
-        if (!this.$.input.value) return;
-
-        this.__pushValue(this.$.input.value);
-        setTimeout(() => this.$.input.value = '', 0);
-        break;
-
-      default:
-        this.__remainingKeysDown(event);
-    }
+    event.keyCode === CasperMultiInput.BACKSPACE_KEY_CODE
+      ? this.__backspaceKeyDown()
+      : this.__remainingKeysDown(event);
   }
 
   /**
@@ -253,10 +240,15 @@ class CasperMultiInput extends PolymerElement {
    */
   __remainingKeysDown (event) {
     // Completely ignore this method if we're not dealing with one of the separator characters.
-    if (!Array.from(this.__separatorCharacters).includes(event.key)) return;
+    if (!this.__separatorCharacters.includes(event.key)) return;
 
     // Prevent the space and the comma if the input doesn't have any value.
-    if (!this.$.input.value) return event.preventDefault();
+    if (!this.$.input.value) {
+      // Tab is a special child here and we must not prevent it's default behaviour.
+      if (event.key === 'Tab') return;
+
+      return event.preventDefault();
+    } 
 
     this.__pushValue(this.$.input.value);
     setTimeout(() => this.$.input.value = '', 0);
