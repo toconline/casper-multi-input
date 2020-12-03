@@ -38,6 +38,7 @@ class CasperMultiInput extends PolymerElement {
        */
       values: {
         type: Array,
+        notify: true,
         value: () => ([]),
         observer: '__valuesChanged'
       },
@@ -248,7 +249,7 @@ class CasperMultiInput extends PolymerElement {
       if (event.key === 'Tab') return;
 
       return event.preventDefault();
-    } 
+    }
 
     this.__pushValue(this.$.input.value);
     setTimeout(() => this.$.input.value = '', 0);
