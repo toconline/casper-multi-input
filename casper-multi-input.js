@@ -23,7 +23,10 @@ class CasperMultiInput extends PolymerElement {
        *
        * @type {String}
        */
-      placeholder: String,
+      placeholder: {
+        type: String,
+        observer: '__placeholderChanged'
+      },
       /**
        * This property defines the type of the casper-multi-input which should have a specific regular expression
        * to check each value.
@@ -156,7 +159,7 @@ class CasperMultiInput extends PolymerElement {
             </casper-multi-input-tag>
           </template>
 
-          <input id="input" placeholder="[[placeholder]]" />
+          <input id="input" placeholder="[[__placeholder]]" />
         </div>
 
         <!--This is supposed to mimic the paper-input's behavior-->
@@ -171,10 +174,10 @@ class CasperMultiInput extends PolymerElement {
   ready () {
     super.ready();
 
-    this.$.input.addEventListener('blur', () => { 
+    this.$.input.addEventListener('blur', () => {
       this.focused = false;
-      this.__pushValueAndReset()
-     });
+      this.__pushValueAndReset();
+    });
 
     this.$.input.addEventListener('focus', () => { this.focused = true; });
     this.$.input.addEventListener('keydown', event => this.__onKeyDown(event));
@@ -282,6 +285,16 @@ class CasperMultiInput extends PolymerElement {
   }
 
   /**
+   * Adds a new value to the list of existing ones, and visually resets the current input value.
+   */
+  __pushValueAndReset () {
+    if (!this.$.input.value) return;
+
+    this.__pushValue(this.$.input.value);
+    setTimeout(() => this.$.input.value = '', 0);
+  }
+
+  /**
    * This observer is invoked when the values property changes.
    */
   __valuesChanged () {
@@ -297,6 +310,8 @@ class CasperMultiInput extends PolymerElement {
    * This observer is invoked when the __internalValues property changes.
    */
   __internalValuesChanged () {
+    this.__placeholderChanged();
+
     // This is used to avoid observer loops since the values and __internalValues properties alter each other.
     if (this.__internalValuesLock) return;
 
@@ -308,13 +323,10 @@ class CasperMultiInput extends PolymerElement {
   }
 
   /**
-   * Adds a new value to the list of existing ones, and visually resets current input value.
+   * This method is invoked when the placeholde property changes.
    */
-  __pushValueAndReset () {
-    if (!this.$.input.value) return;
-
-    this.__pushValue(this.$.input.value);
-    setTimeout(() => this.$.input.value = '', 0);
+  __placeholderChanged () {
+    this.__placeholder = !this.placeholder || this.__internalValues.length > 0 ? '' : this.placeholder;
   }
 }
 
