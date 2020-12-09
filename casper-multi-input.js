@@ -205,6 +205,7 @@ class CasperMultiInput extends PolymerElement {
    */
   __removeValue (valueIndex) {
     this.__internalValues = this.__internalValues.filter((_, index) => index !== valueIndex);
+    this.$.input.focus();
   }
 
   /**
