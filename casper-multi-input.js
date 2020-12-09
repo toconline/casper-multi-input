@@ -301,8 +301,14 @@ class CasperMultiInput extends PolymerElement {
     // This is used to avoid observer loops since the values and __internalValues properties alter each other.
     if (this.__valuesLock || !this.values) return;
 
+    // Make sure that the values are contained in an Array.
+    if (!Array.isArray(this.values)) {
+      this.values = [this.values].flat(Infinity);
+      return;
+    }
+
     this.__internalValuesLock = true;
-    this.__internalValues = [this.values].flat().map(value => this.__createValue(value));
+    this.__internalValues = this.values.map(value => this.__createValue(value));
     this.__internalValuesLock = false;
   }
 
