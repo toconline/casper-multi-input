@@ -6,7 +6,15 @@ class CasperMultiInputTag extends PolymerElement {
 
   static get properties () {
     return {
-
+      /**
+       * This flag states if the current tag contains an invalid value.
+       *
+       * @type {Boolean}
+       */
+      invalid: {
+        type: Boolean,
+        reflectToAttribute: true
+      }
     };
   }
 
@@ -25,8 +33,35 @@ class CasperMultiInputTag extends PolymerElement {
         }
 
         :host([invalid]) {
-          background-color: var(--status-red);
           border-color: var(--status-red);
+          background-color: var(--status-red);
+        }
+
+        span {
+          color: #616161;
+          font-weight: 600;
+          font-size: 0.8rem;
+        }
+
+        casper-icon {
+          width: 0.9rem;
+          height: 0.9rem;
+          margin-left: 0.5rem;
+          padding-right: 0.5rem;
+          transition: color 100ms ease-out;
+        }
+
+        casper-icon:hover {
+          cursor: pointer;
+          transition: color 100ms ease-in;
+        }
+
+        :host(:not([invalid])) casper-icon {
+          color: #616161;
+        }
+
+        :host(:not([invalid])) casper-icon:hover {
+          color: black;
         }
 
         :host([invalid]) span,
@@ -34,33 +69,15 @@ class CasperMultiInputTag extends PolymerElement {
           color: white;
         }
 
-        span {
-          font-size: 0.8rem;
-          font-weight: 600;
+        :host([invalid]) casper-icon:hover {
           color: #616161;
         }
-
-        casper-icon {
-          padding-right: 0.5rem;
-          color: #616161;
-          transition: color 100ms ease-out;
-          margin-left: 0.5rem;
-          height: 0.9rem;
-          width: 0.9rem;
-        }
-
-        casper-icon:hover {
-          transition: color 100ms ease-in;
-          color: black !important;
-          cursor: pointer;
-        }
-
       </style>
 
       <paper-ripple></paper-ripple>
       <span><slot></slot></span>
-      <casper-icon 
-        icon="fa-light:times" 
+      <casper-icon
+        icon="fa-light:times"
         id="icon">
       </casper-icon>
     `;
