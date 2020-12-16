@@ -10,6 +10,17 @@ class CasperMultiInput extends PolymerElement {
   static get properties () {
     return {
       /**
+       * This property memoizes already validated values to prevent unnecessary regex checks or network requests. This can
+       * also be shared between components if you have multiple casper-multi-input living in the same "context".
+       *
+       * @type {Object}
+       */
+      alreadyValidatedValues: {
+        type: Object,
+        value: () => ({}),
+        notify: true
+      },
+      /**
        * This flag states if the input is currently focused which will trigger an animation if it is.
        *
        * @type {Boolean}
@@ -40,10 +51,28 @@ class CasperMultiInput extends PolymerElement {
        * @type {Array}
        */
       values: {
-        type: Array,
+        type: String,
         notify: true,
-        value: () => ([]),
+        value: '',
         observer: '__valuesChanged'
+      },
+      /**
+       * The character which should be used to separate the different values.
+       *
+       * @type {String}
+       */
+      valuesSeparator: {
+        type: String,
+        value: ','
+      },
+      /**
+       * The app's object.
+       *
+       * @type {Object}
+      */
+      __app: {
+        type: Object,
+        value: () => window.app
       },
       /**
        * An array containing all the values, including the invalid ones.
@@ -52,19 +81,7 @@ class CasperMultiInput extends PolymerElement {
        */
       __internalValues: {
         type: Array,
-        value: () => ([]),
         observer: '__internalValuesChanged'
-      },
-      /**
-       * An object containing the regular expressions per type of input.
-       *
-       * @type {Object}
-       */
-      __regularExpressionsPerType: {
-        type: Object,
-        value: () => ({
-          email: /^\S+@\S+$/
-        })
       },
       /**
        * The list of characters that should be used to separate values.
@@ -74,7 +91,21 @@ class CasperMultiInput extends PolymerElement {
       __separatorCharacters: {
         type: String,
         value: ', '
-      }
+      },
+      /**
+       * An object containing the regular expressions per type of input.
+       *
+       * @type {Object}
+       */
+      __validationsPerType: {
+        type: Object,
+        value: () => ({
+          email: {
+            method: '__validateEmail',
+            remote: true
+          }
+        })
+      },
     };
   }
 
@@ -269,11 +300,24 @@ class CasperMultiInput extends PolymerElement {
    * @param {String} value The value that shall be created.
    */
   __createValue (value) {
-    const regularExpression = this.__regularExpressionsPerType[this.type];
+    const validationSettings = this.__validationsPerType[this.type];
+
+    // Check if this value was already validated previously.
+    let isValueValid;
+    let isValueBeingValidated;
+
+    if (this.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
+      isValueValid = this.alreadyValidatedValues[this.type][value];
+      isValueBeingValidated = false;
+    } else {
+      isValueValid = this[validationSettings.method](value);
+      isValueBeingValidated = validationSettings.remote;
+    }
 
     return {
       value,
-      invalid: regularExpression && !regularExpression.test(value)
+      invalid: !isValueValid,
+      validating: isValueBeingValidated
     };
   }
 
@@ -301,16 +345,13 @@ class CasperMultiInput extends PolymerElement {
    */
   __valuesChanged () {
     // This is used to avoid observer loops since the values and __internalValues properties alter each other.
-    if (this.__valuesLock || !this.values) return;
-
-    // Make sure that the values are contained in an Array.
-    if (!Array.isArray(this.values)) {
-      this.values = [this.values].flat(Infinity);
-      return;
-    }
+    if (this.__valuesLock) return;
 
     this.__internalValuesLock = true;
-    this.__internalValues = this.values.map(value => this.__createValue(value));
+    this.__internalValues = this.values
+      .split(this.valuesSeparator)
+      .filter(value => !!value)
+      .map(value => this.__createValue(value));
     this.__internalValuesLock = false;
   }
 
@@ -320,13 +361,15 @@ class CasperMultiInput extends PolymerElement {
   __internalValuesChanged () {
     this.__placeholderChanged();
 
-    // This is used to avoid observer loops since the values and __internalValues properties alter each other.
-    if (this.__internalValuesLock) return;
+    // This is used to avoid observer loops since the values and __internalValues properties alter each other. Also
+    // protects the scenarios where another casper-multi-input is double-way binding the same value.
+    if (this.__internalValuesLock || this.__internalValues.some(internalValue => internalValue.validating)) return;
 
     this.__valuesLock = true;
     this.values = this.__internalValues
       .filter(internalValue => !internalValue.invalid)
-      .map(internalValue => internalValue.value);
+      .map(internalValue => internalValue.value)
+      .join(this.valuesSeparator);
     this.__valuesLock = false;
   }
 
@@ -335,6 +378,49 @@ class CasperMultiInput extends PolymerElement {
    */
   __placeholderChanged () {
     this.__placeholder = !this.placeholder || this.__internalValues.length > 0 ? '' : this.placeholder;
+  }
+
+  /**
+   * This method memoizes a value's validation result to prevent later regex checks or network requests on the same value.
+   *
+   * @param {String} value The value whose validation's result will be memoized.
+   * @param {Boolean} valid The result of the validation.
+   */
+  __memoizeValueValidation (value, valid) {
+    if (!this.alreadyValidatedValues.hasOwnProperty(this.type)) {
+      this.alreadyValidatedValues[this.type] = {};
+    }
+
+    this.alreadyValidatedValues[this.type][value] = valid;
+
+    // Makes sure that Polymer notifies other components who might be looking at this.
+    this.alreadyValidatedValues = { ...this.alreadyValidatedValues };
+  }
+
+  /**
+   * This method validates the email using an endpoint which checks if the domain is valid.
+   *
+   * @param {String} email The email being validated.
+   */
+  async __validateEmail (email) {
+    // The default response if the request below fails or times out.
+    let response = { data: { email, valid: false } };
+
+    try {
+      response = await this.__app.broker.get(`email/validate?email=${email}`, 10000);
+    } catch { };
+
+    this.__memoizeValueValidation(response.data.email, response.data.valid);
+
+    this.__internalValues = this.__internalValues.map(internalValue => {
+      if (internalValue.value !== response.data.email) return internalValue;
+
+      return {
+        validating: false,
+        value: internalValue.value,
+        invalid: !response.data.valid
+      };
+    });
   }
 }
 
