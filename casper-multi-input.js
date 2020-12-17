@@ -404,7 +404,8 @@ class CasperMultiInput extends PolymerElement {
     let response = { data: { email, valid: false } };
 
     try {
-      response = await this.__app.broker.get(`email/validate?email=${email}`, 10000);
+      const encondedEmail = email.replace('+', '%2B');
+      response = await this.__app.broker.get(`email/validate?email=${encondedEmail}`, 10000);
     } catch { };
 
     this.__memoizeValueValidation(response.data.email, response.data.valid);
