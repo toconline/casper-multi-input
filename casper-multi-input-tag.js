@@ -1,5 +1,6 @@
 import '@cloudware-casper/casper-icons/casper-icon.js';
 import '@polymer/paper-ripple/paper-ripple.js';
+import '@polymer/paper-spinner/paper-spinner.js';
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 
 class CasperMultiInputTag extends PolymerElement {
@@ -12,6 +13,15 @@ class CasperMultiInputTag extends PolymerElement {
        * @type {Boolean}
        */
       invalid: {
+        type: Boolean,
+        reflectToAttribute: true
+      },
+      /**
+       * This flag states if the current tag contains a value which is being currently validated.
+       *
+       * @type {Boolean}
+       */
+      validating: {
         type: Boolean,
         reflectToAttribute: true
       }
@@ -46,9 +56,18 @@ class CasperMultiInputTag extends PolymerElement {
         casper-icon {
           width: 0.9rem;
           height: 0.9rem;
-          margin-left: 0.5rem;
-          padding-right: 0.5rem;
-          transition: color 100ms ease-out;
+          margin: 0 0.5rem;
+        }
+
+        paper-spinner {
+          width: 0.9rem;
+          height: 0.9rem;
+          margin: 0 0.5rem;
+          --paper-spinner-stroke-width: 2px;
+          --paper-spinner-layer-1-color: var(--primary-color);
+          --paper-spinner-layer-2-color: var(--primary-color);
+          --paper-spinner-layer-3-color: var(--primary-color);
+          --paper-spinner-layer-4-color: var(--primary-color);
         }
 
         casper-icon:hover {
@@ -69,6 +88,10 @@ class CasperMultiInputTag extends PolymerElement {
           color: white;
         }
 
+        :host([validating]) span {
+          color: #989898;
+        }
+
         :host([invalid]) casper-icon:hover {
           color: #616161;
         }
@@ -76,10 +99,17 @@ class CasperMultiInputTag extends PolymerElement {
 
       <paper-ripple></paper-ripple>
       <span><slot></slot></span>
-      <casper-icon
-        icon="fa-light:times"
-        id="icon">
-      </casper-icon>
+
+      <template is="dom-if" if="[[!validating]]">
+        <casper-icon
+          icon="fa-light:times"
+          id="icon">
+        </casper-icon>
+      </template>
+
+      <template is="dom-if" if="[[validating]]">
+        <paper-spinner active></paper-spinner>
+      </template>
     `;
   }
 

@@ -185,7 +185,10 @@ class CasperMultiInput extends PolymerElement {
       <div id="outer-container">
         <div id="container">
           <template is="dom-repeat" items="[[__internalValues]]">
-            <casper-multi-input-tag invalid="[[item.invalid]]" on-click="__removeOrUpdateValue">
+            <casper-multi-input-tag
+              invalid="[[item.invalid]]"
+              validating="[[item.validating]]"
+              on-click="__removeOrUpdateValue">
               [[item.value]]
             </casper-multi-input-tag>
           </template>
