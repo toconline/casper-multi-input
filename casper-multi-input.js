@@ -418,10 +418,11 @@ class CasperMultiInput extends PolymerElement {
       response = await this.__app.broker.get(`email/validate?email=${encodedEmail}`, 10000);
     } catch { };
 
-    this.__memoizeValueValidation(response.data.email, response.data.valid);
+
+    this.__memoizeValueValidation(email, response.data.valid);
 
     this.__internalValues = this.__internalValues.map(internalValue => {
-      if (internalValue.value !== response.data.email) return internalValue;
+      if (internalValue.value !== email) return internalValue;
 
       return {
         validating: false,
