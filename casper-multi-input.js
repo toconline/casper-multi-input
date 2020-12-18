@@ -36,7 +36,8 @@ class CasperMultiInput extends PolymerElement {
        */
       invalidValues: {
         type: Boolean,
-        notify: true
+        notify: true,
+        value: false
       },
       /**
        * The input's placeholder.
@@ -61,7 +62,8 @@ class CasperMultiInput extends PolymerElement {
        */
       validatingValues: {
         type: Boolean,
-        notify: true
+        notify: true,
+        value: false
       },
       /**
        * The list of valid values.
