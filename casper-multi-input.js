@@ -351,7 +351,12 @@ class CasperMultiInput extends PolymerElement {
     const values = this.values ?? '';
 
     this.__internalValuesLock = true;
-    this.__internalValues = values.split(this.valuesSeparator).filter(value => !!value).map(value => this.__createValue(value));
+
+    this.__internalValues = values
+      .split(this.valuesSeparator)
+      .filter(value => !!value)
+      .map(value => this.__createValue(value));
+
     this.__internalValuesLock = false;
   }
 
@@ -366,7 +371,12 @@ class CasperMultiInput extends PolymerElement {
     if (this.__internalValuesLock || this.__internalValues.some(internalValue => internalValue.validating)) return;
 
     this.__valuesLock = true;
-    this.values = this.__internalValues.filter(internalValue => !internalValue.invalid).map(internalValue => internalValue.value).join(this.valuesSeparator);
+
+    this.values = this.__internalValues
+      .filter(internalValue => !internalValue.invalid)
+      .map(internalValue => internalValue.value)
+      .join(this.valuesSeparator);
+
     this.__valuesLock = false;
   }
 
@@ -404,8 +414,8 @@ class CasperMultiInput extends PolymerElement {
     let response = { data: { email, valid: false } };
 
     try {
-      const encondedEmail = email.replace('+', '%2B');
-      response = await this.__app.broker.get(`email/validate?email=${encondedEmail}`, 10000);
+      const encodedEmail = email.replace('+', '%2B');
+      response = await this.__app.broker.get(`email/validate?email=${encodedEmail}`, 10000);
     } catch { };
 
     this.__memoizeValueValidation(response.data.email, response.data.valid);
