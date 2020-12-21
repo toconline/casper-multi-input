@@ -10,17 +10,6 @@ class CasperMultiInput extends PolymerElement {
   static get properties () {
     return {
       /**
-       * This property memoizes already validated values to prevent unnecessary regex checks or network requests. This can
-       * also be shared between components if you have multiple casper-multi-input living in the same "context".
-       *
-       * @type {Object}
-       */
-      alreadyValidatedValues: {
-        type: Object,
-        value: () => ({}),
-        notify: true
-      },
-      /**
        * This flag states if the input is currently focused which will trigger an animation if it is.
        *
        * @type {Boolean}
@@ -225,8 +214,27 @@ class CasperMultiInput extends PolymerElement {
     `;
   }
 
+
+  /**
+   * This method memoizes a value's validation result to prevent later regex checks or network requests on the same value.
+   *
+   * @param {String} type The type of the value being validated.
+   * @param {String} value The value whose validation's result will be memoized.
+   * @param {Boolean} valid The result of the validation.
+   */
+  static memoizeValueValidation (type, value, valid) {
+    if (!CasperMultiInput.alreadyValidatedValues.hasOwnProperty(type)) {
+      CasperMultiInput.alreadyValidatedValues[type] = {};
+    }
+
+    CasperMultiInput.alreadyValidatedValues[type][value] = valid;
+  }
+
   ready () {
     super.ready();
+
+    // Initialize the cache or use the existing one.
+    CasperMultiInput.alreadyValidatedValues = CasperMultiInput.alreadyValidatedValues ?? {};
 
     this.$.input.addEventListener('blur', () => {
       this.focused = false;
@@ -329,8 +337,8 @@ class CasperMultiInput extends PolymerElement {
     let isValueValid = true;
     let isValueBeingValidated = false;
 
-    if (this.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
-      isValueValid = this.alreadyValidatedValues[this.type][value];
+    if (CasperMultiInput?.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
+      isValueValid = CasperMultiInput.alreadyValidatedValues[this.type][value];
       isValueBeingValidated = false;
     } else if (validationSettings) {
       isValueValid = this[validationSettings.method](value);
@@ -414,23 +422,6 @@ class CasperMultiInput extends PolymerElement {
   }
 
   /**
-   * This method memoizes a value's validation result to prevent later regex checks or network requests on the same value.
-   *
-   * @param {String} value The value whose validation's result will be memoized.
-   * @param {Boolean} valid The result of the validation.
-   */
-  __memoizeValueValidation (value, valid) {
-    if (!this.alreadyValidatedValues.hasOwnProperty(this.type)) {
-      this.alreadyValidatedValues[this.type] = {};
-    }
-
-    this.alreadyValidatedValues[this.type][value] = valid;
-
-    // Makes sure that Polymer notifies other components who might be looking at this.
-    this.alreadyValidatedValues = { ...this.alreadyValidatedValues };
-  }
-
-  /**
    * This method validates the email using an endpoint which checks if the domain is valid.
    *
    * @param {String} email The email being validated.
@@ -445,7 +436,7 @@ class CasperMultiInput extends PolymerElement {
     } catch { };
 
 
-    this.__memoizeValueValidation(email, response.data.valid);
+    CasperMultiInput.memoizeValueValidation(this.type, email, response.data.valid);
 
     this.__internalValues = this.__internalValues.map(internalValue => {
       if (internalValue.value !== email) return internalValue;
