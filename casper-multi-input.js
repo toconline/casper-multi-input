@@ -312,17 +312,10 @@ class CasperMultiInput extends PolymerElement {
    */
   __remainingKeysDown (event) {
     // Completely ignore this method if we're not dealing with one of the separator characters.
-    if (!Array.from(this.__separatorCharacters).includes(event.key)) return;
+    if (!Array.from(this.__separatorCharacters).includes(event.key) && event.key !== 'Enter') return;
 
-    // Prevent the space and the comma if the input doesn't have any value.
-    if (!this.$.input.value) {
-      // Tab is a special child here and we must not prevent it's default behaviour.
-      if (event.key === 'Tab') return;
-
-      return event.preventDefault();
-    }
-
-    this.__pushValueAndReset();
+    event.preventDefault();
+    if (this.$.input.value) this.__pushValueAndReset();
   }
 
   /**
@@ -368,7 +361,7 @@ class CasperMultiInput extends PolymerElement {
     if (!this.$.input.value) return;
 
     this.__pushValue(this.$.input.value);
-    setTimeout(() => this.$.input.value = '', 0);
+    this.$.input.value = '';
   }
 
   /**
