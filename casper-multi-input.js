@@ -397,8 +397,8 @@ class CasperMultiInput extends PolymerElement {
   __internalValuesChanged () {
     this.__placeholderChanged();
 
-    this.invalidValues = this.__internalValues.filter(internalValue => internalValue.invalid);
-    this.validatingValues = this.__internalValues.filter(internalValue => internalValue.validating);
+    this.invalidValues = this.__internalValues.filter(internalValue => internalValue.invalid).map(internalValue => internalValue.value).join(this.valuesSeparator);
+    this.validatingValues = this.__internalValues.filter(internalValue => internalValue.validating).map(internalValue => internalValue.value).join(this.valuesSeparator);
 
     // This is used to avoid observer loops since the values and __internalValues properties alter each other. Also
     // protects the scenarios where another casper-multi-input is double-way binding the same value.
