@@ -19,14 +19,14 @@ class CasperMultiInput extends PolymerElement {
         reflectToAttribute: true
       },
       /**
-       * This flag states if the input currently has any invalid value.
+       * The list of invalid values.
        *
-       * @type {Boolean}
+       * @type {Array}
        */
       invalidValues: {
-        type: Boolean,
+        type: Array,
         notify: true,
-        value: false
+        value: []
       },
       /**
        * The input's placeholder.
@@ -45,14 +45,14 @@ class CasperMultiInput extends PolymerElement {
        */
       type: String,
       /**
-       * This flag states if the input currently has any value being validated.
+       * The list of values being validated.
        *
-       * @type {Boolean}
+       * @type {Array}
        */
       validatingValues: {
-        type: Boolean,
+        type: Array,
         notify: true,
-        value: false
+        value: []
       },
       /**
        * The list of valid values.
@@ -397,8 +397,8 @@ class CasperMultiInput extends PolymerElement {
   __internalValuesChanged () {
     this.__placeholderChanged();
 
-    this.invalidValues = this.__internalValues.some(internalValue => internalValue.invalid);
-    this.validatingValues = this.__internalValues.some(internalValue => internalValue.validating);
+    this.invalidValues = this.__internalValues.filter(internalValue => internalValue.invalid);
+    this.validatingValues = this.__internalValues.filter(internalValue => internalValue.validating);
 
     // This is used to avoid observer loops since the values and __internalValues properties alter each other. Also
     // protects the scenarios where another casper-multi-input is double-way binding the same value.
