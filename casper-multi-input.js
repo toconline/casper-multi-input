@@ -330,7 +330,7 @@ class CasperMultiInput extends PolymerElement {
     let isValueValid = true;
     let isValueBeingValidated = false;
 
-    if (CasperMultiInput?.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
+    if (CasperMultiInput.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
       isValueValid = CasperMultiInput.alreadyValidatedValues[this.type][value];
       isValueBeingValidated = false;
     } else if (validationSettings) {
