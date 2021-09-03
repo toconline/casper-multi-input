@@ -131,7 +131,7 @@ class CasperMultiInput extends PolymerElement {
         #outer-container {
           width: 100%;
           padding: 8px 0;
-          min-height: var(--paper-container-default-height);
+          /* min-height: var(--paper-container-default-height); */
         }
 
         #outer-container #container {
@@ -139,7 +139,7 @@ class CasperMultiInput extends PolymerElement {
           flex-wrap: wrap;
           align-items: flex-end;
           /* Remove two pixels because of the underline */
-          min-height: calc(var(--paper-container-default-height) - 2px);
+          /* min-height: calc(var(--paper-container-default-height) - 2px); */
         }
 
         #outer-container #container casper-multi-input-tag {
@@ -189,9 +189,24 @@ class CasperMultiInput extends PolymerElement {
         :host([focused]) #outer-container .focused-line {
           transform: none;
         }
+
+        input {
+          background-color: inherit;
+        }
+
+        .floated-label-placeholder {
+          @apply --paper-font-caption;
+          color: var(--paper-input-container-color, var(--secondary-text-color));
+        }
+
+        :host([focused]) #outer-container .floated-label-placeholder {
+          color: var(--paper-input-container-focus-color, var(--primary-color));
+        }
       </style>
 
       <div id="outer-container">
+        <div class="floated-label-placeholder" aria-hidden="true" hidden$="[[!__hidePlaceholder(__internalValues)]]">&nbsp;</div>
+        <label class="floated-label-placeholder" hidden$="[[__hidePlaceholder(__internalValues)]]" aria-hidden="true" for$="[[_inputId]]" slot="placeholder">[[placeholder]]</label>
         <div id="container">
           <template is="dom-repeat" items="[[__internalValues]]">
             <casper-multi-input-tag
@@ -440,6 +455,10 @@ class CasperMultiInput extends PolymerElement {
         invalid: !response.data.valid
       };
     });
+  }
+
+  __hidePlaceholder (internalValues) {
+    return !this.placeholder || internalValues.length === 0;
   }
 }
 
