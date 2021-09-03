@@ -75,6 +75,15 @@ class CasperMultiInput extends PolymerElement {
         value: ','
       },
       /**
+       * Set label always visible with no float.
+       *
+       * @type {Boolean}
+       */
+      alwaysFloatLabel: {
+        type: Boolean,
+        value: false
+      },
+      /**
        * The app's object.
        *
        * @type {Object}
@@ -426,7 +435,7 @@ class CasperMultiInput extends PolymerElement {
    * This method is invoked when the placeholde property changes.
    */
   __placeholderChanged () {
-    this.__placeholder = !this.placeholder || this.__internalValues.length > 0 ? '' : this.placeholder;
+    this.__placeholder = !this.placeholder || this.__internalValues.length > 0 || this.alwaysFloatLabel ? '' : this.placeholder;
   }
 
   /**
@@ -458,7 +467,7 @@ class CasperMultiInput extends PolymerElement {
   }
 
   __hidePlaceholder (internalValues) {
-    return !this.placeholder || internalValues.length === 0;
+    return !this.alwaysFloatLabel && (!this.placeholder || internalValues.length === 0);
   }
 }
 
