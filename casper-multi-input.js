@@ -354,12 +354,17 @@ class CasperMultiInput extends PolymerElement {
     let isValueValid = true;
     let isValueBeingValidated = false;
 
-    if (CasperMultiInput.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
-      isValueValid = CasperMultiInput.alreadyValidatedValues[this.type][value];
-      isValueBeingValidated = false;
-    } else if (validationSettings) {
-      isValueValid = this[validationSettings.method](value);
-      isValueBeingValidated = validationSettings.remote;
+    try {
+      if (CasperMultiInput.alreadyValidatedValues[this.type]?.hasOwnProperty(value)) {
+        isValueValid = CasperMultiInput.alreadyValidatedValues[this.type][value];
+        isValueBeingValidated = false;
+      } else if (validationSettings) {
+        isValueValid = this[validationSettings.method](value);
+        isValueBeingValidated = validationSettings.remote;
+      }
+
+    } catch (error) {
+      // debugger
     }
 
     return {
@@ -427,6 +432,16 @@ class CasperMultiInput extends PolymerElement {
       .filter(internalValue => !internalValue.invalid)
       .map(internalValue => internalValue.value)
       .join(this.valuesSeparator);
+
+    // dispatch Event
+    this.dispatchEvent(new CustomEvent('value-changed', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        value: this.values,
+        element: this
+      }
+    }));
 
     this.__valuesLock = false;
   }
