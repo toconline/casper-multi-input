@@ -1,5 +1,5 @@
 {
-  "name": "@cloudware-casper/casper-multi-input",
+  "name": "@toconline/casper-multi-input",
   "main": "casper-multi-input.js",
   "version": "1.6.2",
   "dependencies": {

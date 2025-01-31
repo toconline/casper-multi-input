@@ -16,7 +16,7 @@
  */
 
 import './casper-multi-input-tag.js';
-import '@cloudware-casper/casper-icons/casper-icon-button.js';
+import '@toconline/casper-icons/casper-icon-button.js';
 import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class CasperMultiInput extends PolymerElement {
